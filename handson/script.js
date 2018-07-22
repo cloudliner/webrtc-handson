@@ -11,21 +11,36 @@ $(function(){
       return;
     });
 
-  $.getJSON(`../video-token`, function(tokenResponse) {
-    console.log(tokenResponse.token);
-    Twilio.Video.connect(tokenResponse.token, {
-      name: 'videoRoom',
-    })
-    .then(room => {
-      console.log(`Connected to Room ${room.name}`);
-      $('#my-id').text(room.localParticipant.identity);
-      videoRoom = room;
-      room.participants.forEach(participantConnected);
+  $('#make-call').submit((e) => {
+    e.preventDefault();
 
-      room.on('participantConnected', participantConnected);
-      room.on('participantDisonnected', participantDisconnected);
-      room.once('disconnected', error => room.participants.forEach(participantDisconnected));
+    $.getJSON(`../video-token`, function(tokenResponse) {
+      console.log(tokenResponse.token);
+      Twilio.Video.connect(tokenResponse.token, {
+        name: 'videoRoom',
+      })
+      .then(room => {
+        console.log(`Connected to Room ${room.name}`);
+        $('#my-id').text(room.localParticipant.identity);
+        videoRoom = room;
+        room.participants.forEach(participantConnected);
+  
+        room.on('participantConnected', participantConnected);
+        room.on('participantDisonnected', participantDisconnected);
+        room.once('disconnected', error => room.participants.forEach(participantDisconnected));
+  
+        $('#make-call').hide();
+        $('#end-call').show();
+      });  
     });  
+  })
+
+  // leaveボタンを押した処理を追加
+  $('#end-call').click(() => {
+    videoRoom.disconnect();
+    console.log(`Disconnected to Room ${videoRoom.name}`);
+    $('#make-call').show();
+    $('#end-call').hide();   
   });
 
   // すでに接続している参加者に関する処理を追加    
