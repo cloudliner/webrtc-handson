@@ -20,6 +20,32 @@ $(function(){
       console.log(`Connected to Room ${room.name}`);
       $('#my-id').text(room.localParticipant.identity);
       videoRoom = room;
+      room.participants.forEach(participantConnected);
     });  
   });
+
+  // すでに接続している参加者に関する処理を追加    
+  function participantConnected(participant) {
+    console.log(`Participant ${participant.identity} connected'`);
+
+    const videoDom = document.createElement('div');
+    videoDom.id = participant.sid;
+    videoDom.className = 'videoDom';
+    participant.on('trackAdded', track => trackAdded(videoDom, track));
+    participant.tracks.forEach(track => trackAdded(videoDom, track));
+    participant.on('trackRemoved', trackRemoved);
+
+    $('.videosContainer').append(videoDom);
+
+  }
+
+  // トラックを追加します
+  function trackAdded(videoDom, track) {
+    videoDom.appendChild(track.attach());
+  }
+
+  // トラックを削除します
+  function trackRemoved(track) {
+    track.detach().forEach(element => element.remove());
+  }
 });
