@@ -21,6 +21,10 @@ $(function(){
       $('#my-id').text(room.localParticipant.identity);
       videoRoom = room;
       room.participants.forEach(participantConnected);
+
+      room.on('participantConnected', participantConnected);
+      room.on('participantDisonnected', participantDisconnected);
+      room.once('disconnected', error => room.participants.forEach(participantDisconnected));
     });  
   });
 
@@ -39,9 +43,17 @@ $(function(){
 
   }
 
+  // 参加者が退出したときの処理を追加
+  function participantDisconnected(participant) {
+    console.log(`Participant ${participant.identity} disconnected.`);
+
+    participant.tracks.forEach(trackRemoved);
+    document.getElementById(participant.sid).remove();
+  }
+
   // トラックを追加します
   function trackAdded(videoDom, track) {
-    videoDom.appendChild(track.attach());
+    videoDom.appendChild(track.attach()); 
   }
 
   // トラックを削除します
